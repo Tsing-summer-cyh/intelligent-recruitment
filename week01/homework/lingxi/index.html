@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灵犀 AI</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <link rel="stylesheet" href="./css/index.css">
+</head>
+<body class="light-theme"> <div class="app-container">
+        <header class="top-nav">
+            <button id="theme-toggle">🌓 切换主题</button>
+            <button id="clear-chat">🗑️ 清除对话</button>
+        </header>
+
+        <main id="welcome-area" class="area-container">
+            <h1 class="gradient-title">你好，我是灵犀</h1>
+            <p class="subtitle">今天能帮你做些什么？</p>
+            
+            <div class="suggestion-cards">
+                <div class="card"><span class="icon" style="color: #ff5252;">💡</span> 帮我写一段前端代码</div>
+                <div class="card"><span class="icon" style="color: #4caf50;">📝</span> 润色一下我的实习报告</div>
+                <div class="card"><span class="icon" style="color: #2196f3;">🔍</span> 解释一下什么是闭包</div>
+                <div class="card"><span class="icon" style="color: #ff9800;">📅</span> 帮我制定学习计划</div>
+            </div>
+        </main>
+
+        <main id="chat-area" class="area-container hidden">
+            </main>
+
+        <footer class="input-footer">
+            <div class="input-wrapper">
+                <button id="upload-btn" title="上传图片">📎</button>
+                <input type="file" id="file-input" class="hidden" accept="image/*">
+                <div id="image-preview" class="hidden"></div>
+                
+                <textarea id="message-input" placeholder="输入你想说的话 (Shift+Enter 换行)..." rows="1"></textarea>
+                
+                <button id="send-btn" class="hidden">发送 ⬆️</button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="./js/index.js"></script>
+</body>
+</html>
