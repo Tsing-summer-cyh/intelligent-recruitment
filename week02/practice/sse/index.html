@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* 定义闪烁动画，用于在收到新消息时提供视觉反馈 */
+      @keyframes flash {
+        0% { opacity: 0.4; transform: scale(1.05); }
+        50% { opacity: 1; transform: scale(0.98); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      .flash {
+        animation: flash 0.6s ease-out;
+      }
+    </style>
+    <title>SSE 实践</title>
+  </head>
+  <body class="bg-gray-50 min-h-screen pt-10">
+    <div class="flex flex-col items-center gap-4 max-w-md mx-auto">
+      <h2 class="text-xl font-bold text-gray-700 mb-2">SSE 消息接收面板</h2>
+      
+      <div id="未读消息" class="w-80 px-4 py-3 rounded-md shadow-sm bg-blue-50 border-l-4 border-blue-500 text-gray-700 min-h-[48px]">等待未读消息...</div>
+      <div id="订单更新" class="w-80 px-4 py-3 rounded-md shadow-sm bg-green-50 border-l-4 border-green-500 text-gray-700 min-h-[48px]">等待订单更新...</div>
+      <div id="系统通知" class="w-80 px-4 py-3 rounded-md shadow-sm bg-amber-50 border-l-4 border-amber-500 text-gray-700 min-h-[48px]">等待系统通知...</div>
+      
+      <button id="closeBtn" class="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md transition-colors active:scale-95">
+        主动断开连接
+      </button>
+    </div>
+
+    <script>
+      // 1. 创建 EventSource 实例并连接接口
+      const eventSource = new EventSource("http://127.0.0.1:3000/api/sse");
+
+      eventSource.onopen = () => {
+        console.log("SSE 连接成功建立");
+      };
+
+      // 2. 最佳实践：不使用基础的 onmessage，而是监听后端自定义的 event 类型
+      const eventTypes = ["未读消息", "订单更新", "系统通知"];
+      
+      eventTypes.forEach((type) => {
+        eventSource.addEventListener(type, (e) => {
+          const el = document.getElementById(type);
+          // 更新文本内容
+          el.textContent = e.data;
+          
+          // 重置并触发 CSS 动画
+          el.classList.remove("flash");
+          void el.offsetWidth; // 触发浏览器重绘
+          el.classList.add("flash");
+        });
+      });
+
+      // 3. 错误处理机制（连接中断时会自动重连触发）
+      eventSource.onerror = (error) => {
+        console.log("SSE 连接异常或正在尝试重连：", error);
+      };
+
+      // 4. 手动断开连接，避免资源浪费
+      document.getElementById("closeBtn").addEventListener("click", () => {
+        eventSource.close();
+        console.log("已手动关闭 SSE 连接");
+        // 可以选择在这里把按钮置灰或修改文案
+        document.getElementById("closeBtn").textContent = "已断开";
+        document.getElementById("closeBtn").disabled = true;
+        document.getElementById("closeBtn").classList.add("opacity-50", "cursor-not-allowed");
+      });
+    </script>
+  </body>
+</html>
