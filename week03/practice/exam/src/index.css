@@ -1,0 +1,109 @@
+/* src/index.css */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #f4f6f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.app-container {
+  width: 500px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* 按钮通用样式 */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+.btn-primary { background-color: #6384f9; color: white; }
+.btn-primary:hover { background-color: #4f6be0; }
+.btn-outline { background-color: white; border: 1px solid #6384f9; color: #6384f9; }
+.btn-outline:hover { background-color: #f0f4ff; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* 居中卡片样式 (用于开始和结果页) */
+.center-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+}
+
+/* 头部和底部区域 */
+.header, .footer {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header { border-bottom: 2px solid #e2e8f0; }
+.footer { border-top: 1px solid #e2e8f0; }
+
+.content-area { padding: 20px; }
+
+/* 选项样式 */
+.option-btn {
+  width: 100%;
+  text-align: left;
+  padding: 15px;
+  margin-bottom: 12px;
+  border: 1px solid #b3ccff;
+  border-radius: 6px;
+  background-color: #f2f7ff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+.option-btn.correct { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+.option-btn.wrong { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+
+/* --- src/index.css 追加部分 --- */
+
+/* 🌟 Quiz 专用页脚 */
+.quiz-footer {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* 🌟 进度圆点样式 */
+.progress-dots {
+  display: flex;
+  gap: 8px;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid #b3ccff;
+  background-color: white;
+}
+.dot.current {
+  background-color: #6384f9;
+  border-color: #6384f9;
+}
+
+/* 🌟 下一题按钮样式 */
+.btn-next {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  /* 基础 btn 样式已经定义，这里做一些微调 */
+}
