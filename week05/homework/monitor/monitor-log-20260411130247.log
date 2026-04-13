@@ -1,0 +1,18 @@
+=== 服务健康探测分析报告 ===
+生成时间: 2026-04-11 13:02:47
+探测总数: 9
+成功数量: 3
+失败数量: 6
+成功比率: 33.33%
+最慢服务: GitHub (耗时: 3.0001562s)
+--------------------------------------
+详细结果:
+- 本身SSH | 目标: localhost:22 | 耗时: 10.8286ms | 状态: 【失败】(dial tcp [::1]:22: connectex: No connection could be made because the target machine actively refused it.)
+- MySQL服务 | 目标: localhost:3306 | 耗时: 11.3429ms | 状态: 【成功】
+- 无效服务 | 目标: https://not-exist-domain-123.com | 耗时: 0s | 状态: 【失败】(Get "https://not-exist-domain-123.com": dial tcp: lookup not-exist-domain-123.com: no such host)
+- 百度搜索 | 目标: https://www.baidu.com | 耗时: 388.5202ms | 状态: 【成功】
+- 网易首页 | 目标: https://www.163.com | 耗时: 592.4385ms | 状态: 【失败】(非预期状态码: 403 Forbidden)
+- B站 API | 目标: https://api.bilibili.com/x/web-interface/nav | 耗时: 830.3249ms | 状态: 【成功】
+- Raw 文本文件 | 目标: https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt | 耗时: 3.0001128s | 状态: 【失败】(Get "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt": context deadline exceeded)
+- 慢速响应模拟 | 目标: https://httpbin.org/delay/5 | 耗时: 3.0001128s | 状态: 【失败】(Get "https://httpbin.org/delay/5": context deadline exceeded)
+- GitHub | 目标: https://github.com | 耗时: 3.0001562s | 状态: 【失败】(Get "https://github.com": context deadline exceeded)

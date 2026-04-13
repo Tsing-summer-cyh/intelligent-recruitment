@@ -1,0 +1,18 @@
+=== 服务健康探测分析报告 ===
+生成时间: 2026-04-13 13:19:28
+探测总数: 9
+成功数量: 5
+失败数量: 4
+成功比率: 55.56%
+最慢服务: 慢速响应模拟 (耗时: 3.0003903s)
+--------------------------------------
+详细结果:
+- MySQL服务 | 目标: localhost:3306 | 耗时: 11.2657ms | 状态: 【成功】
+- 本身SSH | 目标: localhost:22 | 耗时: 11.2657ms | 状态: 【失败】(dial tcp [::1]:22: connectex: No connection could be made because the target machine actively refused it.)
+- 无效服务 | 目标: https://not-exist-domain-123.com | 耗时: 0s | 状态: 【失败】(Get "https://not-exist-domain-123.com": dial tcp: lookup not-exist-domain-123.com: no such host)
+- 网易首页 | 目标: https://www.163.com | 耗时: 70.1825ms | 状态: 【失败】(非预期状态码: 403 Forbidden)
+- 百度搜索 | 目标: https://www.baidu.com | 耗时: 83.5083ms | 状态: 【成功】
+- B站 API | 目标: https://api.bilibili.com/x/web-interface/nav | 耗时: 141.4274ms | 状态: 【成功】
+- GitHub | 目标: https://github.com | 耗时: 319.5504ms | 状态: 【成功】
+- Raw 文本文件 | 目标: https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt | 耗时: 340.1248ms | 状态: 【成功】
+- 慢速响应模拟 | 目标: https://httpbin.org/delay/5 | 耗时: 3.0003903s | 状态: 【失败】(Get "https://httpbin.org/delay/5": context deadline exceeded)
