@@ -1,0 +1,8 @@
+# 排除本地 SQLite 数据库文件 
+*.db
+
+# 排除用户上传的照片和头像 [cite: 58]
+uploads/
+
+# 排除编译生成的二进制文件
+photo-album-server
