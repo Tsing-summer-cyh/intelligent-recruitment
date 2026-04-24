@@ -1,28 +1,29 @@
 package main
 
 import (
-	"fmt"
-	"week07/practice/gin/controllers"
+	"log"
+	"week07/practice/gin/db"
 	"week07/practice/gin/routes"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	fmt.Println("🚀 启动学生信息管理系统...")
+	log.Println("🚀 启动学生信息管理系统 (V4版)...")
 
-	// 初始化数据库 (V2 和 V3)
-	controllers.InitV2DB()
-	controllers.InitV3DB()
+	// 1. 初始化数据库及缓存组件
+	// db.InitSQLite() // V2 使用
+	db.InitMySQL() // V3/V4 使用
+	db.InitRedis() // V4 使用
 
-	// 初始化 Gin 引擎
+	// 2. 初始化 Gin 引擎
 	r := gin.Default()
 
-	// 加载路由
+	// 3. 注册所有路由
 	routes.SetupRoutes(r)
 
-	// 启动服务，监听在 8082 端口
+	// 4. 启动服务
 	if err := r.Run(":8082"); err != nil {
-		fmt.Printf("服务启动失败: %v\n", err)
+		log.Fatalf("服务启动失败: %v\n", err)
 	}
 }
