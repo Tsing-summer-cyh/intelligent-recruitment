@@ -1,0 +1,41 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: vocab_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: smart_vocab
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./docs/init.sql:/docker-entrypoint-initdb.d/init.sql # 挂载初始化脚本
+      - vocab_db_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vocab_backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./backend/.env
+    environment:
+      - DB_DSN=root:rootpassword@tcp(db:3306)/smart_vocab?charset=utf8mb4&parseTime=True&loc=Local
+      - JWT_SECRET=your_super_secret_key
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vocab_frontend
+    ports:
+      - "8088:80"
+    depends_on:
+      - backend
+
+volumes:
+  vocab_db_data:
