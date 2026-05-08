@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+// 定义包名
+package proto;
+
+// 指定生成的 Go 代码所在位置和包名
+// 这里设定为 proto 目录下的 gen 包
+option go_package = "./gen;proto";
+
+// 定义文件处理的 gRPC 服务 [cite: 48, 50]
+service FileService {
+  // 1. 保存文件记录 [cite: 12, 51]
+  rpc SaveFileRecord (SaveFileRequest) returns (SaveFileResponse);
+  
+  // 2. 获取文件列表 [cite: 16, 52]
+  rpc GetFileList (GetFileListRequest) returns (GetFileListResponse);
+  
+  // 3. 根据 ID 查询单条记录（用于下载） [cite: 111, 115]
+  rpc GetFileRecordById (GetFileByIdRequest) returns (GetFileByIdResponse);
+}
+
+// 核心数据结构：对应 HTTP 接口要求返回的字段 [cite: 87-92, 99-104]
+message FileRecord {
+  int64 id = 1;
+  string original_name = 2;
+  string stored_name = 3;
+  int64 size = 4;
+  string mime_type = 5;
+  string path = 6;
+}
+
+// ---- 下面是各个接口的请求与响应体 ----
+
+message SaveFileRequest {
+  string original_name = 1;
+  string stored_name = 2;
+  int64 size = 3;
+  string mime_type = 4;
+  string path = 5;
+}
+
+message SaveFileResponse {
+  FileRecord file = 1;
+}
+
+message GetFileListRequest {
+  // 暂时不需要传参
+}
+
+message GetFileListResponse {
+  repeated FileRecord files = 1;
+}
+
+message GetFileByIdRequest {
+  int64 id = 1;
+}
+
+message GetFileByIdResponse {
+  FileRecord file = 1;
+}
