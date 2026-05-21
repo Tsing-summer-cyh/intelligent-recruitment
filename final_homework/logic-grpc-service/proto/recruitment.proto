@@ -1,0 +1,165 @@
+syntax = "proto3";
+
+package recruitment;
+
+// 这里的路径根据你的实际 go mod 命名调整
+option go_package = "./pb";
+
+// 招聘系统核心服务
+service RecruitmentService {
+  // --- 账号与权限 ---
+  rpc Login(LoginRequest) returns (LoginResponse);
+
+  // --- HR 管理端功能 ---
+  rpc CreateJob(CreateJobRequest) returns (CommonResponse);    // 自主新增岗位
+  rpc UpdateJob(UpdateJobRequest) returns (CommonResponse);    // 编辑/下架岗位
+  rpc ListHRJobs(ListHRJobsRequest) returns (ListJobsResponse); // 分页查看个人发布的岗位
+  rpc GetJobApplications(GetApplicationsRequest) returns (ApplicationsResponse); // 查看投递候选人详情
+
+  // --- 候选人端功能 ---
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);   // 查询个人档案
+  rpc UpdateProfile(UpdateProfileRequest) returns (CommonResponse); // 完善/修改个人档案
+  rpc ListPublicJobs(Empty) returns (ListJobsResponse);             // 游客/候选人查看公开岗位列表
+  rpc ApplyJob(ApplyJobRequest) returns (CommonResponse);           // 投递岗位（需校验档案和OSS简历）
+  rpc UploadResume(UploadResumeRequest) returns (UploadResumeResponse); // 简历上传到OSS
+
+  // --- AI 助手功能 ---
+  rpc ChatWithAI(AIChatRequest) returns (AIChatResponse);      // 基于 Eino 框架的智能问答（含历史持久化）
+  rpc GetChatHistory(GetChatHistoryRequest) returns (GetChatHistoryResponse); // 获取HR的历史对话记录
+}
+
+// --- 请求与响应消息定义 ---
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string token = 1;
+  string role = 2;
+  int64 user_id = 3;
+}
+
+message CreateJobRequest {
+  int64 hr_id = 1;
+  string title = 2;
+  string description = 3;
+}
+
+message UpdateJobRequest {
+  int64 job_id = 1;
+  int64 hr_id = 2; // 用于校验岗位归属权限
+  string title = 3;
+  string description = 4;
+  int32 status = 5; // 1-上架, 0-下架
+}
+
+message ListHRJobsRequest {
+  int64 hr_id = 1;
+  int32 page = 2;
+  int32 size = 3;
+}
+
+message ListJobsResponse {
+  repeated JobInfo jobs = 1;
+}
+
+message JobInfo {
+  int64 id = 1;
+  string title = 2;
+  string description = 3;
+  int64 hr_id = 4;
+  int32 status = 5; // 1-上架, 0-下架
+}
+
+message GetProfileRequest {
+  int64 user_id = 1;
+}
+
+message GetProfileResponse {
+  int64 user_id = 1;
+  string real_name = 2;
+  string phone = 3;
+  string highest_education = 4;
+  string university = 5;
+  string experience = 6;
+  string skills = 7;
+  string resume_oss_url = 8;
+}
+
+message UpdateProfileRequest {
+  int64 user_id = 1;
+  string real_name = 2;
+  string phone = 3;
+  string highest_education = 4;
+  string university = 5;
+  string experience = 6;
+  string skills = 7;
+  string resume_oss_url = 8;
+}
+
+message ApplyJobRequest {
+  int64 user_id = 1;
+  int64 job_id = 2;
+}
+
+message AIChatRequest {
+  int64 hr_id = 1;
+  string message = 2;
+}
+
+message AIChatResponse {
+  string reply = 1;
+}
+
+message GetChatHistoryRequest {
+  int64 hr_id = 1;
+}
+
+message GetChatHistoryResponse {
+  repeated ChatMessage messages = 1;
+}
+
+message ChatMessage {
+  string role = 1;     // "user" 或 "assistant"
+  string content = 2; // 对话内容
+  int64 created_at = 3; // 时间戳
+}
+
+message CommonResponse {
+  int32 code = 1; // 0-成功, 其他-失败
+  string msg = 2;
+}
+
+message GetApplicationsRequest {
+  int64 job_id = 1;
+}
+
+message ApplicationsResponse {
+  repeated CandidateProfile profiles = 1;
+}
+
+message CandidateProfile {
+  string real_name = 1;
+  string phone = 2;
+  string university = 3;
+  string resume_url = 4;
+  string highest_education = 5;
+  string skills = 6;
+}
+
+message Empty {}
+
+// 简历上传请求（文件内容以字节流传输）
+message UploadResumeRequest {
+  int64 user_id = 1;
+  string filename = 2;
+  bytes content = 3;
+}
+
+message UploadResumeResponse {
+  int32 code = 1;
+  string msg = 2;
+  string oss_url = 3; // 返回OSS相对路径，如 resumes/user_1_resume.pdf
+}
