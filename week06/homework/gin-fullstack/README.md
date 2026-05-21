@@ -2,9 +2,6 @@
 
 ## 项目基本信息
 
-- 学校：武汉理工大学
-- 姓名：陈榆昊
-- 学号：1023004500
 - 项目目录：`week06/homework/gin-fullstack`
 - 技术栈：`Gin`、`Gorm`、`Vue3`、`Element Plus`、`SQLite`
 
