@@ -4,7 +4,7 @@
 
 ## 项目简介
 
-本系统是一个完整的智能招聘解决方案，采用两层微服务架构（Gin Web网关 + gRPC Logic业务层），实现HR招聘管理与候选人求职投递的全流程数字化。系统集成私有OSS安全简历存储、Eino AI智能问答等核心能力。
+本系统是一个完整的智能招聘解决方案，采用两层微服务架构（Gin Web网关 + gRPC Logic业务层），实现HR招聘管理与候选人求职投递的全流程数字化。系统集成私有OSS安全简历存储、Eino AI智能问答（联动MySQL真实数据）等核心能力。
 
 ## 技术架构
 
@@ -39,7 +39,7 @@
 │  │  - 岗位业务处理                                              │   │
 │  │  - 私有 OSS 签名调度                                         │   │
 │  │  - MySQL 全量数据读写                                        │   │
-│  │  - Eino AI 对话封装                                         │   │
+│  │  - Eino AI 对话封装（联动数据库真实数据）                     │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
                               │
@@ -60,8 +60,11 @@
 | 账号登录 | 独立账号密码登录，JWT 令牌鉴权，无令牌禁止访问 |
 | 岗位管理 | 自主新增、编辑、下架个人发布的招聘岗位 |
 | 投递管理 | 分页查看岗位投递候选人、结构化档案、OSS简历签名链接 |
-| AI 智能问答 | 基于 Eino 框架的自然语言问答，查询投递统计、岗位热度等 |
+| 候选人档案 | 查看所有候选人档案库，支持学历筛选、技能搜索 |
+| 统计分析 | 数据概览、投递趋势分析、岗位热度统计 |
+| AI 智能问答 | 基于 Eino 框架的自然语言问答，**联动 MySQL 数据库回答真实数据** |
 | 对话历史 | AI 对话自动持久化，页面刷新自动加载历史上下文 |
+| 系统通知 | 实时通知推送，新投递提醒 |
 
 ### 候选人用户端功能
 
@@ -80,10 +83,18 @@ final_homework/
 ├── hr-frontend/              # HR 管理端前端 (Vue3 + Vite)
 │   ├── src/
 │   │   ├── views/
-│   │   │   ├── Login.vue     # 登录页面
+│   │   │   ├── Login.vue           # 登录页面
 │   │   │   └ hr/
-│   │   │   │   ├── Layout.vue    # HR 布局框架
-│   │   │   │   └ Dashboard.vue   # HR 工作台（岗位管理+AI问答）
+│   │   │   │   ├── Layout.vue      # HR 布局框架
+│   │   │   │   ├── Dashboard.vue   # HR 工作台（岗位管理+AI问答）
+│   │   │   │   ├── Stats.vue       # 统计分析页面
+│   │   │   │   ├── Profiles.vue    # 候选人档案库
+│   │   │   │   ├── Applications.vue # 投递记录
+│   │   │   │   ├── AIHistory.vue   # AI对话历史
+│   │   │   │   └── Account.vue     # 账户设置
+│   │   │   └ candidate/
+│   │   │   │   ├── Layout.vue      # 候选人管理布局
+│   │   │   │   └ Jobs.vue          # 投递职位
 │   │   ├── router/           # 路由配置
 │   │   ├── utils/            # Axios 请求工具
 │   └── package.json
@@ -92,7 +103,7 @@ final_homework/
 │   ├── src/
 │   │   ├── views/
 │   │   │   ├── Login.vue     # 登录/注册页面
-│   │   │   ├── Jobs.vue      # 岗位大厅
+│   │   │   ├── JobBoard.vue  # 岗位大厅
 │   │   │   ├── Profile.vue   # 个人档案编辑
 │   │   ├── router/
 │   │   ├── utils/
@@ -113,12 +124,12 @@ final_homework/
 │   ├── db/
 │   │   ├── models.go         # GORM 数据模型
 │   │   ├── mysql.go          # MySQL 连接初始化
-│   │   └ gva.db              # SQLite 数据库文件（开发环境）
 │   ├── utils/
 │   │   ├── oss.go            # OSS 上传 + 签名 URL 生成
-│   │   ├── eino.go           # Eino AI 对话封装
-│   ├── config.yaml           # OSS 配置文件
-│   ├── pb/
+│   │   ├── eino.go           # Eino AI 对话封装（含数据库上下文）
+│   ├── pb/                   # Protobuf 生成的 Go 文件
+│   ├── .env.example          # 环境变量配置模板 ⭐
+│   ├── config.yaml.example   # YAML 配置模板
 │   └── go.mod
 │
 ├── api.md                    # API 接口说明文档
@@ -133,59 +144,94 @@ final_homework/
 - **Node.js**: 18+
 - **MySQL**: 8.0+ 或 SQLite 3（开发环境）
 - **阿里云 OSS**: 已创建私有 Bucket
+- **通义千问 API**: 阿里云 DashScope API Key
 
 ## 配置说明
 
-### 1. OSS 配置
+### 重要：环境变量配置
 
-修改 `logic-grpc-service/config.yaml`：
+本项目使用 `.env` 文件管理敏感配置，**所有密钥均通过环境变量读取**，请勿将真实密钥上传到 GitHub。
 
-```yaml
-oss:
-  endpoint: "oss-cn-beijing.aliyuncs.com"  # OSS 地域节点
-  access_key_id: "YOUR_ACCESS_KEY_ID"       # 阿里云 AccessKey ID
-  access_key_secret: "YOUR_ACCESS_KEY_SECRET" # 阿里云 AccessKey Secret
-  bucket_name: "your-bucket-name"           # 私有 Bucket 名称
+#### 第一步：创建环境变量文件
+
+克隆项目后，进入 `logic-grpc-service` 目录，复制模板文件：
+
+```bash
+cd logic-grpc-service
+cp .env.example .env
 ```
 
-### 2. Eino AI 配置
+#### 第二步：编辑 `.env` 文件
 
-修改 `logic-grpc-service/utils/eino.go` 中的 API Key：
+打开 `.env` 文件，填入你的真实密钥：
 
-```go
-// 使用通义千问大模型
-apiKey := "YOUR_DASHSCOPE_API_KEY"
+```bash
+# OSS 阿里云配置
+OSS_ENDPOINT=oss-cn-beijing.aliyuncs.com
+OSS_ACCESS_KEY_ID=你的阿里云AccessKeyID
+OSS_ACCESS_KEY_SECRET=你的阿里云AccessKeySecret
+OSS_BUCKET_NAME=你的私有Bucket名称
+
+# AI 大模型配置 (通义千问 DashScope)
+DASHSCOPE_API_KEY=你的DashScopeAPIKey
+DASHSCOPE_MODEL=qwen-plus
+
+# MySQL 数据库配置
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=你的数据库密码
+MYSQL_DATABASE=smart_recruitment
 ```
 
-### 3. 数据库配置
+#### 配置项说明
 
-修改 `logic-grpc-service/db/mysql.go`（生产环境）：
+| 变量名 | 说明 | 获取方式 |
+|--------|------|----------|
+| `OSS_ENDPOINT` | OSS 地域节点 | 阿里云 OSS 控制台 |
+| `OSS_ACCESS_KEY_ID` | 阿里云访问密钥ID | 阿里云 RAM 控制台 |
+| `OSS_ACCESS_KEY_SECRET` | 阿里云访问密钥Secret | 阿里云 RAM 控制台 |
+| `OSS_BUCKET_NAME` | OSS Bucket名称 | 阿里云 OSS 控制台（需创建私有Bucket） |
+| `DASHSCOPE_API_KEY` | 通义千问API Key | [阿里云 DashScope](https://dashscope.console.aliyun.com/) |
+| `DASHSCOPE_MODEL` | 模型名称 | 默认 `qwen-plus`，可选 `qwen-turbo`、`qwen-max` |
 
-```go
-dsn := "user:password@tcp(host:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
-```
+#### 获取密钥指南
 
-开发环境默认使用 SQLite，无需额外配置。
+**1. 阿里云 OSS 密钥**
+- 登录 [阿里云 OSS 控制台](https://oss.console.aliyun.com/)
+- 创建私有 Bucket（读写权限选择「私有」）
+- 进入 [RAM 控制台](https://ram.console.aliyun.com/) 创建 AccessKey
+- 建议使用 RAM 子账号，仅授予 OSS 权限
+
+**2. 通义千问 API Key**
+- 登录 [DashScope 控制台](https://dashscope.console.aliyun.com/)
+- 开通「通义千问」服务
+- 在 API-KEY 管理页面创建新密钥
 
 ## 启动部署
 
 ### 服务启动顺序
 
 ```bash
-# 1. 启动 Logic gRPC 核心业务服务（端口 50051）
+# 1. 配置环境变量（首次运行必须）
+cd logic-grpc-service
+cp .env.example .env
+# 编辑 .env 填入真实密钥
+
+# 2. 启动 Logic gRPC 核心业务服务（端口 50051）
 cd logic-grpc-service
 go run main.go
 
-# 2. 启动 Gin Web 网关服务（端口 8080）
+# 3. 启动 Gin Web 网关服务（端口 8080）
 cd web-gin-service
 go run main.go
 
-# 3. 启动 HR 管理端前端
+# 4. 启动 HR 管理端前端
 cd hr-frontend
 npm install
 npm run dev
 
-# 4. 启动候选人用户端前端
+# 5. 启动候选人用户端前端
 cd user-frontend
 npm install
 npm run dev
@@ -199,6 +245,15 @@ npm run dev
 | Gin Web 网关 | 8080 |
 | HR 前端开发服务器 | 5173 |
 | 候选人前端开发服务器 | 5174 |
+
+### 测试账号
+
+系统自动创建以下测试账号：
+
+| 角色 | 用户名 | 密码 |
+|------|--------|------|
+| HR | test_hr | 123456 |
+| 候选人 | test_candidate | 123456 |
 
 ## API 接口说明
 
@@ -214,7 +269,9 @@ npm run dev
 | `/api/v1/hr/jobs` | GET | HR | 查看个人岗位 |
 | `/api/v1/hr/jobs/:id` | PUT | HR | 编辑/下架岗位 |
 | `/api/v1/hr/jobs/:id/applications` | GET | HR | 查看投递详情 |
-| `/api/v1/hr/ai/chat` | POST | HR | AI智能问答 |
+| `/api/v1/hr/profiles` | GET | HR | 候选人档案库 |
+| `/api/v1/hr/stats` | GET | HR | 统计数据 |
+| `/api/v1/hr/ai/chat` | POST | HR | AI智能问答（联动数据库） |
 | `/api/v1/hr/ai/history` | GET | HR | AI对话历史 |
 | `/api/v1/candidate/jobs` | GET | 候选人 | 岗位列表 |
 | `/api/v1/candidate/profile` | GET/PUT | 候选人 | 个人档案 |
@@ -245,8 +302,9 @@ npm run dev
 - 动态生成 10 分钟有效期的签名 URL，防盗链保护隐私
 - 本地不缓存、不留存任何简历源文件
 
-### 3. Eino AI 框架集成
+### 3. Eino AI 框架集成 + 数据库联动
 - 基于 CloudWeGo Eino 框架调用通义千问大模型
+- **AI 助手可查询 MySQL 真实数据回答问题**（岗位数、投递数、候选人信息等）
 - AI 对话自动持久化到 MySQL，绑定 HR 账号
 - 前端自动加载历史对话上下文，延续问答交互
 
@@ -258,13 +316,18 @@ npm run dev
 - 未完善档案 + 未上传简历直接拦截投递请求
 - 简历格式严格限制（PDF/DOC/DOCX），后端双重校验文件后缀和大小
 
+### 6. 安全密钥管理
+- 所有敏感配置通过 `.env` 环境变量管理
+- `.env` 文件已加入 `.gitignore`，防止密钥泄露
+- 提供配置模板 `.env.example` 供用户参考
+
 ## 技术栈
 
 | 层级 | 技术 |
 |------|------|
 | 前端 | Vue3、Vite、Element Plus、Axios |
 | Web网关 | Go、Gin、gRPC Client、JWT |
-| 业务服务 | Go、gRPC Server、GORM、Eino |
+| 业务服务 | Go、gRPC Server、GORM、Eino、godotenv |
 | 数据存储 | MySQL / SQLite |
 | 文件存储 | 阿里云 OSS（私有 Bucket） |
 | AI 大模型 | 通义千问（Eino 框架封装） |
