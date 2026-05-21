@@ -3,23 +3,41 @@ package utils
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
+	"github.com/joho/godotenv"
 )
 
 var chatModel model.ChatModel
 
-// InitEino 初始化大模型客户端
+// InitEino 初始化大模型客户端（从 .env 读取配置）
 func InitEino() {
-	apiKey := "sk-b7b51dc1e6044449871be581c07c78b3"
+	// 加载 .env 文件
+	if err := godotenv.Load(); err != nil {
+		log.Println("⚠️ 未找到 .env 文件，将使用系统环境变量")
+	}
+
+	// 从环境变量读取配置
+	apiKey := os.Getenv("DASHSCOPE_API_KEY")
+	modelName := os.Getenv("DASHSCOPE_MODEL")
+
+	// 校验必要配置
+	if apiKey == "" {
+		log.Fatalf("❌ AI 配置缺失，请检查 .env 文件中的 DASHSCOPE_API_KEY")
+	}
+	if modelName == "" {
+		modelName = "qwen-plus" // 默认模型
+	}
 
 	config := &openai.ChatModelConfig{
 		BaseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
 		APIKey:  apiKey,
-		Model:   "qwen-plus",
+		Model:   modelName,
 	}
 
 	var err error

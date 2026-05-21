@@ -7,46 +7,40 @@ import (
 	"os"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
-	"gopkg.in/yaml.v3"
+	"github.com/joho/godotenv"
 )
-
-// Config 映射 yaml 配置
-type Config struct {
-	OSS struct {
-		Endpoint        string `yaml:"endpoint"`
-		AccessKeyID     string `yaml:"access_key_id"`
-		AccessKeySecret string `yaml:"access_key_secret"`
-		BucketName      string `yaml:"bucket_name"`
-	} `yaml:"oss"`
-}
 
 var (
 	ossClient *oss.Client
 	bucket    *oss.Bucket
-	AppConfig Config
 )
 
-// InitOSS 初始化 OSS 客户端
+// InitOSS 初始化 OSS 客户端（从 .env 读取配置）
 func InitOSS() {
-	// 1. 读取 YAML 配置文件
-	yamlFile, err := os.ReadFile("config.yaml")
-	if err != nil {
-		log.Fatalf("读取 config.yaml 失败: %v", err)
+	// 加载 .env 文件
+	if err := godotenv.Load(); err != nil {
+		log.Println("⚠️ 未找到 .env 文件，将使用系统环境变量")
 	}
 
-	err = yaml.Unmarshal(yamlFile, &AppConfig)
-	if err != nil {
-		log.Fatalf("解析 YAML 失败: %v", err)
+	// 从环境变量读取配置
+	endpoint := os.Getenv("OSS_ENDPOINT")
+	accessKeyID := os.Getenv("OSS_ACCESS_KEY_ID")
+	accessKeySecret := os.Getenv("OSS_ACCESS_KEY_SECRET")
+	bucketName := os.Getenv("OSS_BUCKET_NAME")
+
+	// 校验必要配置
+	if endpoint == "" || accessKeyID == "" || accessKeySecret == "" || bucketName == "" {
+		log.Fatalf("❌ OSS 配置缺失，请检查 .env 文件中的 OSS_* 环境变量")
 	}
 
-	// 2. 初始化阿里云 OSS 客户端
-	ossClient, err = oss.New(AppConfig.OSS.Endpoint, AppConfig.OSS.AccessKeyID, AppConfig.OSS.AccessKeySecret)
+	// 初始化阿里云 OSS 客户端
+	ossClient, err := oss.New(endpoint, accessKeyID, accessKeySecret)
 	if err != nil {
 		log.Fatalf("创建 OSS 客户端失败: %v", err)
 	}
 
-	// 3. 获取存储空间
-	bucket, err = ossClient.Bucket(AppConfig.OSS.BucketName)
+	// 获取存储空间
+	bucket, err = ossClient.Bucket(bucketName)
 	if err != nil {
 		log.Fatalf("获取 Bucket 失败: %v", err)
 	}

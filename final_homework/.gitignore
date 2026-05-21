@@ -26,9 +26,13 @@ Thumbs.db
 # Logs
 *.log
 
-# Environment files
+# Environment files (敏感信息)
 .env
 .env.local
+.env.*
+!.env.example
+config.yaml
+!.config.yaml.example
 
 # Temporary files
 *.tmp
